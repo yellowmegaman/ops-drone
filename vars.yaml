@@ -1,0 +1,41 @@
+---
+common:
+  dc: <REPLACE ME>
+  domain: <REPLACE ME>
+  email: <REPLACE ME>
+caddy:
+  ram: 64
+  version: 0.11.2
+drone:
+  ram: 256
+  admin_user: <REPLACE ME>
+  token: <REPLACE ME>
+  image: "drone/drone"
+  tag: 1.0.0-rc.4
+  rpc_secret: <REPLACE ME>
+  port: 8000
+agent:
+  image: "drone/agent"
+  tag: 1.0.0-rc.4
+  concurrency: 1
+autoscaler:
+  ram: 128
+  image: "drone/autoscaler"
+  tag: 1.0.0-rc.1
+  min: 0
+  max: 8
+  age: 4m
+  interval: 5s
+  port: 8080
+  proto: https
+github:
+  client: <REPLACE ME>
+  secret: <REPLACE ME>
+  org: <REPLACE ME>
+google:
+  zone: europe-west4-a
+  project: <REPLACE ME>
+  image: <REPLACE ME>
+  machine: custom-8-16384
+  disk: 15
+  tags: <REPLACE ME>
