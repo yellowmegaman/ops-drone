@@ -11,12 +11,12 @@ drone:
   admin_user: <REPLACE ME>
   token: <REPLACE ME>
   image: "drone/drone"
-  tag: 1.0.0-rc.4
+  tag: 1.0.0-rc.5
   rpc_secret: <REPLACE ME>
   port: 8000
 agent:
   image: "drone/agent"
-  tag: 1.0.0-rc.4
+  tag: 1.0.0-rc.5
   concurrency: 1
 autoscaler:
   ram: 128
