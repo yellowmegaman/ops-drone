@@ -1,0 +1,123 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: drone-rbac
+subjects:
+  - kind: ServiceAccount
+    # Reference to upper's `metadata.name`
+    name: default
+    # Reference to upper's `metadata.namespace`
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drone-static
+  labels:
+    app: drone
+spec:
+  selector:
+    app: drone
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  - name: https
+    port: 443
+    targetPort: 443
+  type: LoadBalancer
+  loadBalancerIP: ""
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: drone
+  labels:
+    app: drone
+spec:
+  serviceName: drone
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drone
+  template:
+    metadata:
+      labels:
+        app: drone
+    spec:
+      terminationGracePeriodSeconds: 1800
+      containers:
+      - name: drone
+        image: drone/drone:1.0.0
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        resources:
+          limits:
+            cpu: "200m"
+            memory: 1Gi
+          requests:
+            cpu: "200m"
+            memory: 1Gi
+        env:
+          - name: DRONE_KUBERNETES_ENABLED
+            value: "true"
+          - name: DRONE_KUBERNETES_NAMESPACE
+            value: "default"
+          - name: DRONE_GITHUB_SERVER
+            value: "https://github.com"
+          - name: DRONE_GITHUB_CLIENT_ID
+            value: ""
+          - name: DRONE_GITHUB_CLIENT_SECRET
+            value: ""
+          - name: DRONE_RPC_SECRET
+            value: ""
+          - name: DRONE_SERVER_HOST
+            value: ""
+          - name: DRONE_SERVER_PROTO
+            value: "https"
+          - name: DRONE_REPOSITORY_FILTER
+            value: ""
+          - name: DRONE_LOGS_COLOR
+            value: "false"
+          - name: DRONE_LOGS_DEBUG
+            value: "true"
+          - name: DRONE_LOGS_PRETTY
+            value: "false"
+          - name: DRONE_TLS_AUTOCERT
+            value: "true"
+          - name: DRONE_USER_CREATE
+            value: ""
+          - name: DRONE_USER_FILTER
+            value: ""
+          - name: DRONE_DATABASE_DATASOURCE
+            value: "/var/lib/drone/database.sqlite"
+        readinessProbe:
+          exec:
+            command:
+            - pgrep
+            - drone
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: drone-data
+          mountPath: /var/lib/drone
+  volumeClaimTemplates:
+  - metadata:
+      name: drone-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: fast
+      resources:
+        requests:
+          storage: 10Gi
